@@ -158,3 +158,45 @@ export const deleteSnippet = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const getSnippetsForDashboard = async (req: Request, res: Response) => {
+  try {
+    // Retrieve all snippets
+    const snippets = await Snippet.find();
+
+    // Get all unique languages and tags for filtering
+    const languages = await Snippet.distinct("language");
+    const tags = await Snippet.distinct("tags");
+
+    // Apply filters if query params exist
+    const { language, tag } = req.query;
+    let filteredSnippets = snippets;
+
+    if (language) {
+      filteredSnippets = filteredSnippets.filter(
+        (snippet) => snippet.language === language
+      );
+    }
+
+    if (tag) {
+      filteredSnippets = filteredSnippets.filter((snippet) =>
+        snippet.tags.includes(tag)
+      );
+    }
+
+    // Decode the code field from base64 to UTF-8 for each snippet
+    filteredSnippets = filteredSnippets.map((snippet) => {
+      const decodedCode = Buffer.from(snippet.code, "base64").toString("utf-8");
+      return { ...snippet.toObject(), code: decodedCode }; // Return updated snippet with decoded code
+    });
+
+    // Render the dashboard view and pass snippets, languages, and tags to the template
+    res.render("dashboard", { snippets: filteredSnippets, languages, tags });
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Something went wrong" });
+    }
+  }
+};

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <h1>Code Snippets Dashboard</h1>
+
+    <!-- Filter Form -->
+    <form action="/dashboard" method="get">
+      <label for="language">Language:</label>
+      <select name="language" id="language">
+        <option value="">--All--</option>
+        <% languages.forEach(language => { %>
+        <option value="<%= language %>"><%= language %></option>
+        <% }) %>
+      </select>
+
+      <label for="tag">Tag:</label>
+      <select name="tag" id="tag">
+        <option value="">--All--</option>
+        <% tags.forEach(tag => { %>
+        <option value="<%= tag %>"><%= tag %></option>
+        <% }) %>
+      </select>
+
+      <button type="submit">Filter</button>
+    </form>
+
+    <!-- Snippet Table -->
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Code</th>
+          <th>Language</th>
+          <th>Tags</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% snippets.forEach(snippet => { %>
+        <tr>
+          <td><%= snippet.title %></td>
+          <td><pre><%= snippet.code %></pre></td>
+          <td><%= snippet.language %></td>
+          <td><%= snippet.tags.join(', ') %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <script src="/public/main.js"></script>
+  </body>
+</html>
