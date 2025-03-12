@@ -25,12 +25,18 @@ export const createSnippet = async (req: Request, res: Response) => {
 
 export const getSnippets = async (req: Request, res: Response) => {
   try {
+    const now = Date.now();
     const snippets = await Snippet.find();
-    snippets.forEach(
+    const filteredSnippets = snippets.filter(
+      (snippet) =>
+        !snippet.expiresIn ||
+        new Date(snippet.createdAt).getTime() + snippet.expiresIn * 1000 > now
+    );
+    filteredSnippets.forEach(
       (snippet) =>
         (snippet.code = Buffer.from(snippet.code, "base64").toString("utf-8"))
     );
-    res.json(snippets);
+    res.json(filteredSnippets);
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ message: error.message });
@@ -45,6 +51,15 @@ export const getSnippetById = async (req: Request, res: Response) => {
     const { id } = req.params;
     const snippet = await Snippet.findById(id);
     if (!snippet) return res.status(404).json({ message: "Snippet not found" });
+
+    const now = Date.now();
+    if (
+      snippet.expiresIn &&
+      new Date(snippet.createdAt).getTime() + snippet.expiresIn * 1000 < now
+    ) {
+      return res.status(404).json({ message: "Snippet expired" });
+    }
+
     snippet.code = Buffer.from(snippet.code, "base64").toString("utf-8");
     res.json(snippet);
   } catch (error) {
