@@ -1,71 +1,126 @@
-# Node, Express and TypeScript Project Template
+# Snippets API
 
-Welcome to the **Node, Express and TypeScript Project Template**! This repository serves as a starter template for building Node.js applications with TypeScript. It comes pre-configured with models, controllers, routes, and bundling, so you can focus on building your application.
+## Overview
+
+The **Snippets API** allows users to store, retrieve, update, and delete code snippets. It also supports filtering, sorting, and pagination.
 
 ## Features
 
-- **TypeScript**: Strongly typed language for writing robust and maintainable code.
-- **Project Structure**: Organized folder structure with models, controllers, and routes.
-- **Bundling pkgroll**: Pre-configured with a bundler for efficient builds.
-- **TSX**: For automatic server restarts an running typescript during development.
-- **Dependency Management**: Configured with npm.
+- **Create** a new code snippet
+- **Retrieve** all snippets with filtering options
+- **Get** a single snippet by ID
+- **Update** an existing snippet
+- **Delete** a snippet
+- **Dashboard** with EJS rendering and filtering options
 
-## Project Structure
+## Installation
 
-```
-├── src
-│   ├── controllers
-│   │   └── exampleController.ts
-│   ├── middleware
-│   │   └── exampleMiddleware.ts
-│   ├── models
-│   │   └── exampleModel.ts
-│   ├── routes
-│   │   └── exampleRoutes.ts
-│   └── server.ts    // Main entry point of the application
-├── dist             // Compiled output (auto-generated)
-├── package.json     // Project dependencies and scripts
-├──.gitignore        // Ignore files to github
-├── tsconfig.json    // TypeScript configuration
-└── README.md        // Project documentation
-```
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/your-repo/snippets-api.git
+   ```
+2. Navigate to the project folder:
+   ```sh
+   cd snippets-api
+   ```
+3. Install dependencies:
+   ```sh
+   npm install
+   ```
+4. Create a `.env` file and add your MongoDB connection string:
+   ```
+   MONGO_URI=your_mongodb_connection_string
+   PORT=5000
+   ```
+5. Start the server:
+   ```sh
+   npm run dev
+   ```
 
-## Getting Started
+## API Endpoints
 
-### 1. Start Development Server
+### 1. Create a Snippet
 
-Run the development server with hot-reloading:
+**POST** `/api/snippets`
 
-```bash
-npm run dev
-```
+#### Request Body (JSON):
 
-### 2. Build the Project
-
-Compile TypeScript files to JavaScript:
-
-```bash
-npm run build
-```
-
-### 3. Start the Production Server
-
-After building the project, start the server:
-
-```bash
-npm start
+```json
+{
+  "title": "Example Snippet",
+  "code": "console.log('Hello World!');",
+  "language": "JavaScript",
+  "tags": ["console", "log"],
+  "expiresIn": 3600
+}
 ```
 
-## Scripts
+#### Response:
 
-- `dev`: Starts the development server with hot-reloading.
-- `build`: Compiles the TypeScript source code to JavaScript.
-- `start`: Starts the production server.
+```json
+{
+  "_id": "123456",
+  "title": "Example Snippet",
+  "code": "Y29uc29sZS5sb2coJ0hlbGxvIFdvcmxkIScpOw==",
+  "language": "JavaScript",
+  "tags": ["console", "log"],
+  "createdAt": "2024-03-12T12:00:00.000Z"
+}
+```
+
+### 2. Get All Snippets
+
+**GET** `/api/snippets`
+
+#### Query Parameters (optional):
+
+- `language=JavaScript` → Filter by programming language (case-insensitive)
+- `tags=async,fetch` → Filter by one or more tags (case-insensitive)
+- `page=1&limit=10` → Pagination (default 10 per page)
+- `sort=createdAt&order=desc` → Sort snippets by date (newest first)
+
+### 3. Get Snippet by ID
+
+**GET** `/api/snippets/:id`
+
+### 4. Update a Snippet
+
+**PUT** `/api/snippets/:id`
+
+#### Request Body (JSON):
+
+```json
+{
+  "title": "Updated Snippet",
+  "code": "console.log('Updated');",
+  "language": "JavaScript",
+  "tags": ["update"]
+}
+```
+
+### 5. Delete a Snippet
+
+**DELETE** `/api/snippets/:id`
+
+## Dashboard
+
+The dashboard is accessible at:
+
+```
+http://localhost:5000/dashboard
+```
+
+It displays all snippets with filtering options for **language** and **tags**.
+
+## Technologies Used
+
+- **Node.js**
+- **Express.js**
+- **MongoDB** (via Mongoose)
+- **TypeScript**
+- **EJS** (for rendering the dashboard)
+- **Cors** & **dotenv** for environment handling
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-Happy coding! 🎉
+This project is open-source and available under the **MIT License**.
