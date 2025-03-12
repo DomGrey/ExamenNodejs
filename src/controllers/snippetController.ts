@@ -55,3 +55,41 @@ export const getSnippetById = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const updateSnippet = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { title, code, language, tags } = req.body;
+    const encodedCode = Buffer.from(code).toString("base64");
+    const updatedSnippet = await Snippet.findByIdAndUpdate(
+      id,
+      { title, code: encodedCode, language, tags },
+      { new: true }
+    );
+    if (!updatedSnippet)
+      return res.status(404).json({ message: "Snippet not found" });
+    res.json(updatedSnippet);
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Something went wrong" });
+    }
+  }
+};
+
+export const deleteSnippet = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const deletedSnippet = await Snippet.findByIdAndDelete(id);
+    if (!deletedSnippet)
+      return res.status(404).json({ message: "Snippet not found" });
+    res.json({ message: "Snippet deleted successfully" });
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Something went wrong" });
+    }
+  }
+};
