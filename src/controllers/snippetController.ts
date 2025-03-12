@@ -25,18 +25,68 @@ export const createSnippet = async (req: Request, res: Response) => {
 
 export const getSnippets = async (req: Request, res: Response) => {
   try {
+    const {
+      language,
+      tags,
+      page = 1,
+      limit = 10,
+      sort = "createdAt",
+      order = "desc",
+    } = req.query;
+
+    // Build filter object
+    let filter: any = {};
+
+    // Case-insensitive filtering by language
+    if (language) {
+      filter.language = new RegExp(language as string, "i"); // 'i' makes it case-insensitive
+    }
+
+    // Case-insensitive filtering by tags (supports multiple tags)
+    if (tags) {
+      const tagArray = (tags as string)
+        .split(",")
+        .map((tag) => tag.trim().toLowerCase()); // Convert to array and trim
+      filter.tags = { $in: tagArray }; // MongoDB query to check if any tag matches
+    }
+
+    // Pagination - determine the skip and limit values
+    const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
+    const limitValue = parseInt(limit as string);
+
+    // Sorting - dynamic sort based on query parameters
+    const sortOrder = order === "desc" ? -1 : 1; // Default is descending if order is 'desc'
+
+    // Fetch snippets based on the filter, pagination, and sorting
+    const snippets = await Snippet.find(filter)
+      .skip(skip)
+      .limit(limitValue)
+      .sort({ [sort]: sortOrder });
+
+    // Get the total count of snippets for pagination
+    const totalSnippets = await Snippet.countDocuments(filter);
+
+    // Filter out expired snippets
     const now = Date.now();
-    const snippets = await Snippet.find();
     const filteredSnippets = snippets.filter(
       (snippet) =>
         !snippet.expiresIn ||
         new Date(snippet.createdAt).getTime() + snippet.expiresIn * 1000 > now
     );
+
+    // Decode code from base64 to UTF-8
     filteredSnippets.forEach(
       (snippet) =>
         (snippet.code = Buffer.from(snippet.code, "base64").toString("utf-8"))
     );
-    res.json(filteredSnippets);
+
+    // Send the response with pagination details
+    res.json({
+      totalSnippets,
+      totalPages: Math.ceil(totalSnippets / limitValue),
+      currentPage: parseInt(page as string),
+      snippets: filteredSnippets,
+    });
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ message: error.message });
